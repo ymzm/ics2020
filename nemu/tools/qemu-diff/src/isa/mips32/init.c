@@ -1,2 +1,3 @@
-void init_isa() {
+void init_isa()
+{
 }
