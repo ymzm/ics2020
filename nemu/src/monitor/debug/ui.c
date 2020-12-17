@@ -39,6 +39,62 @@ static int cmd_q(char *args) {
 
 static int cmd_help(char *args);
 
+static int cmd_howif(char *args)
+{
+  bool ret;
+  expr(args, &ret);
+  printf("test for howif\n");
+  return 0;
+}
+
+static int cmd_si(char *args)
+{
+    char *arg = strtok(NULL, " ");
+    int num;
+    if (arg == NULL)
+    {
+      cpu_exec(1);
+    }
+    else
+    {
+      sscanf(arg, "%d",&num);
+      if (num >0 && num <256)
+      {
+          cpu_exec(num);
+      }
+      else
+      {
+          cpu_exec(1);
+      }
+    }
+
+    return 0;
+}
+
+static int cmd_info(char *args)
+{
+    char *arg = strtok(NULL, " ");
+    if (arg == NULL)
+    {
+        printf ("put 'info r' or 'info n'\n");
+        return 0;
+    }
+
+    if (strcmp (arg, "r") == 0)
+    {
+        isa_reg_display();
+    }
+    else if (strcmp (arg, "w") == 0)
+    {
+        // TODO: watch point display
+    }
+    else
+    {
+      printf ("put 'info r' or 'info n'\n");
+    }
+    return 0;
+}
+
 static struct {
   char *name;
   char *description;
@@ -49,8 +105,13 @@ static struct {
   { "q", "Exit NEMU", cmd_q },
 
   /* TODO: Add more commands */
+  {"howif", "test for howif", cmd_howif},
+  {"si", "execute N (0<N<256)instructions, N=1 by default", cmd_si},
+  {"info", "info r : info about registers\n info w : info about watch point\n", cmd_info},
 
 };
+
+
 
 #define NR_CMD (sizeof(cmd_table) / sizeof(cmd_table[0]))
 

@@ -28,4 +28,6 @@
 
 #define TODO() panic("please implement me")
 
+#define DEBUG() printf("%s %d\n", __FUNCTION__, __LINE__);
+
 #endif
