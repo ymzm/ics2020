@@ -163,9 +163,96 @@ int check_parentheses(int p, int q, bool *success)
     return 0;
 }
 
+static u_int32_t opt_pri(int x){
+  switch (x){
+    
+    case '(':
+    case ')':
+      return 2;
+
+  //  case TK_NOT:
+ //   case TK_DEREF:
+  //  case TK_MINUS:
+  //    return 3;
+
+    case '*':
+    case '/':
+      return 4;
+
+    case '+':
+    case '-':
+      return 5;
+
+ //   case '>':
+ //   case '<':
+ //   case TK_LE:
+ //   case TK_GE:
+  //  case TK_NEQ:
+  //  case TK_EQ:
+  //    return 6;
+
+   // case TK_AND:
+  //    return 7;
+//
+ //   case TK_ORR:
+ //     return 8;
+    default:
+      return -1;
+  }
+}
+
+static bool is_opt(u_int32_t x){
+  switch (x){
+    case TK_HEX:
+    case TK_DEC:
+      return false;
+    default:
+      return true;
+  }
+}
+
+static u_int32_t get_main_op(int p,int q){  //bug
+  int result=p;
+  int pos = p;
+  int sum =0;
+  int curPriority = 0;
+  for(;pos<=q;pos++){
+    int tp = tokens[pos].type;
+    //注意if的顺序，如果先判断sum，那么当前位为括号则会跳过
+    if(tp=='('){
+      sum++;
+      continue;
+    }
+    if(tp==')'){
+      sum--;
+      continue;
+    }
+
+    if(!is_opt(tp))
+      continue;
+    
+    if(sum>0)
+      continue;
+    else{
+      assert(sum == 0);
+      // 优先级数值越高 实际优先级越低 越最后计算 所以最后计算的一个最低优先级运算符为主运算符
+      if(opt_pri(tp)>=curPriority){
+      curPriority = opt_pri(tp);
+      result = pos;
+      }
+      else 
+        continue;
+    }
+
+  }
+  printf("main opt @ position %d\n",result);
+  return result;
+}
+
 int eval(int p, int q, bool *success)
 {DEBUG();
   int ret;
+  int pos;
   if (p > q) {
     assert (0);
   }
@@ -196,12 +283,30 @@ int eval(int p, int q, bool *success)
   }
   else {
     /* We should do more things here. */DEBUG();
+      pos = get_main_op(p,q);
+       u_int32_t val1 = eval(p,pos-1,success);
+    u_int32_t val2 = eval(pos+1,q,success);
 
+    switch(tokens[pos].type){
+      case '+':
+        return val1+val2;DEBUG();
+      case '-':
+        return val1-val2;
+      case '*':
+        return val1*val2;
+      case '/':
+        if(val2==0){
+          Assert(0,"Zero div is wrong!\n");
+          *success = false;
+        }
+        return val1/val2;
+      default:
+          *success = false;
   }
     DEBUG();
-  return 0;
+  return -1;
 }
-
+}
 word_t expr(char *e, bool *success) {
   if (!make_token(e)) {
     *success = false;
@@ -209,6 +314,8 @@ word_t expr(char *e, bool *success) {
     return 0;
   }
 
-
-  return eval(0, nr_token-1, success);
+  int ret=  eval(0, nr_token-1, success);
+  printf ("ret is %d\n", ret);
+  return ret;
+  //return eval(0, nr_token-1, success);
 }
