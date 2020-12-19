@@ -17,30 +17,40 @@
  * For more details about the register encoding scheme, see i386 manual.
  */
 
-typedef struct {
-  struct {
-    uint32_t _32;
-    uint16_t _16;
-    uint8_t _8[2];
-  } gpr[8];
+typedef struct
+{
+    union
+    {
+        union
+        {
+            uint32_t _32;
+            uint16_t _16;
+            uint8_t _8[2];
+        } gpr[8]; //这里是共用空间
 
-  /* Do NOT change the order of the GPRs' definitions. */
+        struct
+        {
+            rtlreg_t eax, ecx, edx, ebx, esp, ebp, esi, edi;
+        };
 
-  /* In NEMU, rtlreg_t is exactly uint32_t. This makes RTL instructions
-   * in PA2 able to directly access these registers.
-   */
-  rtlreg_t eax, ecx, edx, ebx, esp, ebp, esi, edi;
+    };
 
-  vaddr_t pc;
+    /* Do NOT change the order of the GPRs' definitions. */
+
+    /* In NEMU, rtlreg_t is exactly uint32_t. This makes RTL instructions
+     * in PA2 able to directly access these registers.
+     */
+    vaddr_t pc;
+    rtlreg_t EFLAGS; //pa2 need
 } x86_CPU_state;
-
 // decode
-typedef struct {
-  bool is_operand_size_16;
-  uint8_t ext_opcode;
-  const rtlreg_t *mbase;
-  rtlreg_t mbr;
-  word_t moff;
+typedef struct
+{
+    bool is_operand_size_16;
+    uint8_t ext_opcode;
+    const rtlreg_t *mbase;
+    rtlreg_t mbr;
+    word_t moff;
 } x86_ISADecodeInfo;
 
 #define suffix_char(width) ((width) == 4 ? 'l' : ((width) == 1 ? 'b' : ((width) == 2 ? 'w' : '?')))

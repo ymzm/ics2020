@@ -26,7 +26,7 @@ LD_LIBS = -lSDL2 -lreadline -ldl
 endif
 
 ifndef SHARE
-DIFF ?= kvm
+DIFF ?= qemu
 ifneq ($(ISA),x86)
 ifeq ($(DIFF),kvm)
 DIFF = qemu
@@ -103,7 +103,7 @@ $(BINARY): $(OBJS)
 run-env: $(BINARY) $(DIFF_REF_SO)
 
 run: run-env
-	$(call git_commit, "run")
+#	$(call git_commit, "run")
 	$(NEMU_EXEC)
 
 gdb: run-env

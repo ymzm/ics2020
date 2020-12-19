@@ -6,9 +6,9 @@
 
 
 #if _SHARE
-// do not enable these features while building a reference design
-#undef DIFF_TEST
-#undef DEBUG
+    // do not enable these features while building a reference design
+    #undef DIFF_TEST
+    #undef DEBUG
 #endif
 
 /* You will define this macro in PA2 */
