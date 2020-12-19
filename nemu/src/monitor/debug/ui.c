@@ -32,7 +32,6 @@ static int cmd_c(char *args)
     return 0;
 }
 
-
 static int cmd_q(char *args)
 {
     return -1;
@@ -40,11 +39,19 @@ static int cmd_q(char *args)
 
 static int cmd_help(char *args);
 
-static int cmd_howif(char *args)
+static int cmd_p(char *args)
 {
-    bool ret;
-    expr(args, &ret);
-    printf("test for howif\n");
+    bool success = true;
+    int ret;
+    ret = expr(args, &success);
+    if(success == false)
+    {
+        printf("Wrong expression, please check!\n");
+    }
+    else
+    {
+        printf("%d\n", ret);
+    }
     return 0;
 }
 
@@ -87,11 +94,65 @@ static int cmd_info(char *args)
         if(strcmp(arg, "w") == 0)
         {
             // TODO: watch point display
+            print_wp();
         }
         else
         {
             printf("put 'info r' or 'info n'\n");
         }
+    return 0;
+}
+
+// add a watch point
+// usage : watch expr
+static int cmd_w(char *args)
+{
+    char *arg = strtok(NULL, " ");
+    bool success = true;
+    if(arg == NULL)
+    {
+        printf("usage: w expr\n");
+        return 0;
+    }
+    int len = strlen(arg);
+    if(len == 0 && len > 255)
+    {
+        printf("expr is too long or empty, please check\n");
+        return 0;
+    }
+    int val = expr(arg, &success);
+    if(!success)
+    {
+        printf("set watchpoint failed. Please check your exprssion!\n");
+        return 0;
+    }
+    WP *wp = wp_alloc();
+    strcpy(wp->expr_str, arg);
+    wp->value = val;
+    wp->hit = 0;
+    printf("watch point No is %d\n", wp->NO);
+    return 0;
+}
+
+static int cmd_d(char *args)
+{
+    char *arg = strtok(NULL, " ");
+    if(!arg)
+    {
+        printf("NO. of watchpoint can't be empty\n");
+        return -1;
+    }
+    int n;
+    sscanf(arg, "%d", &n);
+    bool success = del_wp(n);
+    if(!success)
+    {
+        printf("del watchpoint failed\n");
+    }
+    else
+    {
+        printf("del watchpoint %d success\n", n);
+    }
     return 0;
 }
 
@@ -107,10 +168,11 @@ static struct
     { "q", "Exit NEMU", cmd_q },
 
     /* TODO: Add more commands */
-    {"howif", "test for howif", cmd_howif},
+    {"p", "calculate a expression", cmd_p},
     {"si", "execute N (0<N<256)instructions, N=1 by default", cmd_si},
     {"info", "info r : info about registers\n info w : info about watch point\n", cmd_info},
-
+    {"w", "set a watch point. usage: w expr\n", cmd_w},
+    {"d", "delete a watch point. usage: \n\t d NO of watch point\n", cmd_d},
 };
 
 
